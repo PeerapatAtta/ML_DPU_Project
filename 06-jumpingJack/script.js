@@ -2,9 +2,14 @@ const videoElement = document.getElementById('video');
 const canvasElement = document.getElementById('canvas');
 const canvasCtx = canvasElement.getContext('2d');
 const uploadVideoInput = document.getElementById('uploadVideo');
+const jumpingJackCountElement = document.getElementById('jumpingJackCount');
+const resetButton = document.getElementById('resetButton');
+
 
 let camera; // ตัวแปรกล้อง
 let isCameraRunning = false;
+let jumpingJackCount = 0;
+let isUp = false; // ใช้ตรวจจับสถานะ "ขึ้น" ของแขนและขา
 
 // Initialize Mediapipe Holistic
 const holistic = new Holistic({
@@ -51,6 +56,13 @@ document.getElementById('stopButton').addEventListener('click', () => {
   }
 });
 
+// Reset Jumping Jack Count
+resetButton.addEventListener('click', () => {
+  jumpingJackCount = 0; // Reset count
+  jumpingJackCountElement.textContent = jumpingJackCount; // Update UI
+  console.log("Jumping Jack Count Reset");
+});
+
 // Process Uploaded Video
 uploadVideoInput.addEventListener('change', (event) => {
   const file = event.target.files[0];
@@ -76,6 +88,7 @@ function processVideoWithLandmarks() {
   processFrame();
 }
 
+
 function onResults(results) {
   // Adjust Canvas Size to Match Video
   canvasElement.width = videoElement.videoWidth;
@@ -95,6 +108,8 @@ function onResults(results) {
       lineWidth: 2,
     });
     drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
+
+    detectJumpingJack(results.poseLandmarks);
   }
 
   if (results.leftHandLandmarks) {
@@ -121,4 +136,34 @@ function onResults(results) {
   }
 
   canvasCtx.restore();
+}
+
+function detectJumpingJack(poseLandmarks) {
+  // จุดที่ใช้: ไหล่, สะโพก, ข้อเท้า
+  const leftShoulder = poseLandmarks[11];
+  const rightShoulder = poseLandmarks[12];
+  const leftElbow = poseLandmarks[13];
+  const rightElbow = poseLandmarks[14];
+  const leftHip = poseLandmarks[23];
+  const rightHip = poseLandmarks[24];
+  const leftAnkle = poseLandmarks[27];
+  const rightAnkle = poseLandmarks[28];
+
+  // ตรวจสอบการยกแขนขึ้น
+  // const armsUp = (leftShoulder.y < leftHip.y && rightShoulder.y < rightHip.y);
+  const armsUp = (leftShoulder.y < leftElbow.y && rightShoulder.y < rightElbow.y);
+
+  // ตรวจสอบการแยกขา
+  const legsApart = (Math.abs(leftAnkle.x - rightAnkle.x) > 0.5);
+
+  console.log("armsUp:", armsUp, "isUp:", isUp);
+
+  if (armsUp && !isUp) {
+    isUp = true; // เปลี่ยนสถานะเป็น "ขึ้น"
+  } else if (!armsUp && isUp) {
+    isUp = false; // เปลี่ยนสถานะเป็น "ลง"
+    jumpingJackCount++; // เพิ่มจำนวนการนับ
+    jumpingJackCountElement.textContent = jumpingJackCount; // อัปเดต UI
+    console.log("Jumping Jack Count:", jumpingJackCount); // Debugging
+  }
 }
