@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landmark Real-Time</title>
+  <style>
+    video {
+      max-width: 100%;
+      display: block;
+      margin: 0 auto;
+    }
+    canvas {
+    width: 900px; /* หรือ 100% ของ container */
+    height: 700px;
+    display: block;
+    margin: 0 auto;
+  }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
+</head>
+<body>
+  <h1 style="text-align: center;">Real-Time Landmark Detection</h1>
+  <video id="video" width="700" height="500" autoplay playsinline style="display: none;"></video>
+  <canvas id="canvas" style="transform: scale(1.0);"></canvas>
+  <script src="script.js"></script>
+</body>
+</html>
